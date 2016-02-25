@@ -22,11 +22,38 @@ class Question < ActiveRecord::Base
   )
 
   def results
-    hash = Hash.new(0)
-    responses.all.each do |response|
-      hash[response.answer_choice.text] += 1
+    hash = {}
+    self.answer_choices
+    .joins('LEFT OUTER JOIN responses ON responses.answer_choice_id = answer_choices.id')
+    .group(:id)
+    .select('answer_choices.*, COUNT(responses.id) AS num_votes')
+    .each do |response|
+      hash[response.text] = response.num_votes
     end
     hash
   end
+
+
+
+  # SELECT
+  #   answer_choices.*, COUNT(responses.id) AS num_votes
+  # FROM
+  #   answer_choices
+  # LEFT OUTER JOIN
+  #   responses ON responses.answer_choice_id = answer_choices.id
+  # GROUP BY
+  #   answer_choices.id
+
+
+
+
+
+  # def results
+  #   hash = Hash.new(0)
+  #   responses.all.each do |response|
+  #     hash[response.answer_choice.text] += 1
+  #   end
+  #   hash
+  # end
 
 end
